@@ -3,20 +3,21 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+requirements = ["cobra>=0.15.1"]
+
 setuptools.setup(
-    name="biomassmw", # Replace with your own username
-    version="0.0.1",
+    name="biomassmw",
+    version="1.0.0",
     author="Joshua Chan",
-    author_email="joshua.chan@example.com",
+    author_email="joshua.chan@colostate.edu",
     description="Package for determining the chemical formulae and molecular weights of macromolecules in genome-scale metabolic models",
     long_description=long_description,
-    #long_description_content_type="text/markdown",
+    long_description_content_type="text/markdown",
     url="https://github.com/chan_csu/biomassMWpy",
-    packages=["biomassmw", "biomassmw.objects"],    #setuptools.find_packages()],
+    packages=["biomassmw", "biomassmw.objects"],
+    install_requires=requirements,
     classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-    ],
-    python_requires='>=3.6',
+    ]
+
 )
