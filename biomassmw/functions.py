@@ -38,7 +38,7 @@ def active_met_rxn(model):
 	#return the metabolites and reactions that are not dead end
 	return [[i for i in model.metabolites if i not in deadMet], [j for j in model.reactions if j not in deadRxn]]
 
-def formulaDict2Str(formDict, wtCharge=True, dMax=12):
+def formula_dict2str(formDict, wtCharge=True, dMax=12):
 	'''Convert an element-stoichiometry dictionary into a string of chemical formula.
 	'nan' for indeterminate forms. 'Mass0' for empty dictionary or all stoichiometries = 0.
 	The elements C, H, N, O, P, S are prioritized if present. 'Charge' is present at the end stating the charge of the metabolite
@@ -75,21 +75,21 @@ def formulaDict2Str(formDict, wtCharge=True, dMax=12):
 						k -= 1
 					sE = sE[:k] if sE[k - 1] != '.' else sE[:k - 1]
 				s += e + sE
-  	return s	
+	return s
 
 def num2alpha(index, charSet='_abcdefghijklmnopqrstuvwxyz'):
 	''' Transform an integer into the corresponding base-27 representation, with '_' equivalent to '0' and 'z' to the last digit.
-	Used to automatically name conserved moieties. Called by computeMetForm
+	Used to automatically name conserved moieties. Called by compute_met_form
 	'''
 	N, s = len(charSet), ''
-	k = index / N
+	k = index // N
 	while k > 0:
 		s = charSet[index - k * N] + s
-		index, k = k, k / N
+		index, k = k, k // N
 	s = charSet[index] + s
 	return s
 
-	
+
 def extreme_rays_from_null_basis(A, tolerance=None):
 	'''Calculate a subset of the extreme rays of the matrix A (in the format of list of list of rows)
 	Return a numpy matrix.
@@ -135,23 +135,21 @@ def extreme_rays_from_null_basis(A, tolerance=None):
 
 	if isinstance(A, (list,tuple)):
 		if max([len(r) for r in A]) > min([len(r) for r in A]):
-			raise ValueError, 'The rows in the matrix have different lengths.'
+			raise ValueError('The rows in the matrix have different lengths.')
 
-	#Follow the Matlab implementation. 
+	#Follow the Matlab implementation.
 	R, pivcol, tolerance = rref(numpy.matrix(A), tolerance)
 	r = len(pivcol) #rank
 	n = R.shape[1]
-	nopiv = [k for k in xrange(n) if k not in pivcol]
+	nopiv = [k for k in range(n) if k not in pivcol]
 	N = numpy.matrix(numpy.zeros((n, n - r)))
 	if n > r:
 		N[nopiv, :] = numpy.eye(n - r)
 		if r > 0:
 			N[pivcol, :] = -R[range(r),:][:, nopiv]
 	colpos = (N >= 0).all(0)
-	colpos = [k for k in xrange(N.shape[1]) if colpos[0,k]]
+	colpos = [k for k in range(N.shape[1]) if colpos[0,k]]
 	colneg = (N <= 0).all(0)
-	colneg = [k for k in xrange(N.shape[1]) if colneg[0,k]]
+	colneg = [k for k in range(N.shape[1]) if colneg[0,k]]
 	N = numpy.concatenate((N[:,colpos], -N[:,colneg]), 1)
 	return N
-
-	

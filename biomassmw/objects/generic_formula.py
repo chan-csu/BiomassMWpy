@@ -1,23 +1,25 @@
+from __future__ import print_function
+from builtins import int
 import re
 from cobra.core import Metabolite
-from ..functions import formulaDict2Str
+from ..functions import formula_dict2str
 
 element_re = re.compile("([A-Z][a-z_]*)(\-?[0-9.]+[0-9.]?|(?=[A-Z])?)")
 isnan = lambda x: x != x
 
-class GenericFormula(object):
-	'''GenericFormula(formula=None)
+class generic_formula(object):
+	'''generic_formula(formula=None)
 	Formula object allowing for generic elements (an uppercase letter followed by lowercase letters or _, e.g. Generic_element) and 'Charge' in the chemical formula.
 	formula='', None or 'nan' input would all result in the formula being 'nan', the indeterminate state
 	For metabolites with zero mass (photons), use 'Mass0' or any element with only 0 stoichiometry. Will be automatically changed into 'Mass0'
-	The input formula can also be a dictionary with elements as keys and stoichiometries as values or a cobra.core.Metabolite object. 
+	The input formula can also be a dictionary with elements as keys and stoichiometries as values or a cobra.core.Metabolite object.
 	In the latter case, the formula and charge in the metabolite would be used.
 	Make sure the '.charge' property in the cobra object 'Metabolite' has the correct charge. Or include all charges
 	into the chemical formulae, e.g. 'HCharge1' for proton, 'C3H3O3Charge-1' for pyruvate. Set all .charge to None, float('nan') or 0 to ignore charge balance.
 	'''
 	def __init__(self, formula=None):
 		if isinstance(formula, str) or (formula is None):
-			#a string of chemical formula 
+			#a string of chemical formula
 			self.formula = formula
 		elif isinstance(formula, dict):
 			#input is a dictionary with elements as keys and stoichiometries as values
@@ -25,12 +27,12 @@ class GenericFormula(object):
 		elif isinstance(formula, Metabolite):
 			self.formula = formula.formula
 			if 'Charge' not in self.elements and self.__formula != 'nan':
-				self.charge = formula.charge if isinstance(formula.charge, (int, long, float)) and not isnan(formula.charge) else 0
+				self.charge = formula.charge if isinstance(formula.charge, (int, float)) and not isnan(formula.charge) else 0
 		else:
-			raise ValueError, 'Input must be a string, dictionary or cobra.core.Metabolite object.'
+			raise ValueError('Input must be a string, dictionary or cobra.core.Metabolite object.')
 
 	def __repr__(self):
-		return '%s <GenericFormula object at 0x%s>' %(self.formula, id(self))
+		return '%s <generic_formula object at 0x%s>' %(self.formula, id(self))
 
 	@property
 	def formula(self):
@@ -43,26 +45,26 @@ class GenericFormula(object):
 		self.__formula = 'nan' if text in ['', None] else text
 		if text != 'nan':
 			#reformat the input text to the default format if not undetermined
-			self.__formula = formulaDict2Str(self.elements)
+			self.__formula = formula_dict2str(self.elements)
 
 	@property
-	def formulaWoCharge(self):
+	def formula_wo_charge(self):
 		'''Formula without charge'''
 		return re.split('Charge',self.__formula)[0]
 
-	@formulaWoCharge.setter
-	def formulaWoCharge(self,text):
+	@formula_wo_charge.setter
+	def formula_wo_charge(self,text):
 		'''Reset the formula but keep the charge'''
 		charge = self.charge
 		self.__formula = text
-		self.updateElements({'Charge': charge})
+		self.update_elements({'Charge': charge})
 
 	@property
 	def elements(self):
 		'''Return the element-stoichiometry dictionary.
 		Modify from cobra.core.Metabolite.py'''
 		if not isinstance(self.__formula,str):
-			raise ValueError, 'Formula is not a string.'
+			raise ValueError('Formula is not a string.')
 		if self.__formula == 'nan':
 			return {'nan': float('nan')}
 		parsed = element_re.findall(self.__formula)
@@ -73,13 +75,13 @@ class GenericFormula(object):
 				count = '1'
 			formDict[element] = float(count) if element not in formDict else formDict[element] + float(count)
 		if not s == self.__formula:
-			raise ValueError, "Incorrect formula: %s" %self.__formula
+			raise ValueError("Incorrect formula: %s" %self.__formula)
 		return formDict
-	
+
 	@elements.setter
 	def elements(self, eleDict):
 		'''Reset the formula by an element-stoichiometry dictionary.'''
-		self.__formula = formulaDict2Str(eleDict)
+		self.__formula = formula_dict2str(eleDict)
 
 	@property
 	def charge(self):
@@ -92,13 +94,13 @@ class GenericFormula(object):
 	def charge(self, n):
 		'''Reset the charge'''
 		if self.__formula != 'nan':
-			if isinstance(n, (int, long, float)) and n == n and n not in [float('inf'), float('-inf')]: 
+			if isinstance(n, (int, float)) and n == n and n not in [float('inf'), float('-inf')]:
 				formDict = self.elements
 				if n == 0:
 					tmp = formDict.pop('Charge',None)
 				else:
 					formDict['Charge'] = n
-				self.__formula = formulaDict2Str(formDict)	
+				self.__formula = formula_dict2str(formDict)
 
 	@property
 	def mw(self):
@@ -116,28 +118,28 @@ class GenericFormula(object):
 		Unknown metabolites are not counted as generic
 		'''
 		return False if self.__formula == 'nan' else any([e not in elements_and_molecular_weights and e != 'Charge' for e in self.elements])
-	
-	def updateElements(self, updateDict=None, add=True, **kwargs):
+
+	def update_elements(self, updateDict=None, add=True, **kwargs):
 		'''Update the formula by adding the new dictionary updateDict into it.
 		When add = True, if an element in updateDict is already in the formula, sum up the stoichiometries in the original formula and updateDict
 		When add = False, replace the stoichiometry of an existing element
-		kwargs allow for key-value argument inputs, e.g. updateElements(C=1,O=2)
+		kwargs allow for key-value argument inputs, e.g. update_elements(C=1,O=2)
 		'''
 		formDict = self.elements
 		if 'nan' in formDict:
-			print 'Unknwon formula cannot be updated using .updateElements'
+			print('Unknwon formula cannot be updated using .update_elements')
 		else:
 			if isinstance(updateDict, dict):
 				if add:
 					#if an element is in both the original formula and the updating dictionary, add up the coefficient
-					formDict.update({e: formDict[e] + m_ie if e in formDict else m_ie for e, m_ie in updateDict.iteritems()})
+					formDict.update({e: formDict[e] + m_ie if e in formDict else m_ie for e, m_ie in updateDict.items()})
 				else:
 					#directly update
 					formDict.update(updateDict)
 			elif updateDict is not None:
-				raise ValueError, 'Input must be a dictionary or keyword arguements (e.g. C=6)'
+				raise ValueError('Input must be a dictionary or keyword arguements (e.g. C=6)')
 			formDict.update(kwargs)
-			self.__formula = formulaDict2Str(formDict)
+			self.__formula = formula_dict2str(formDict)
 
 elements_and_molecular_weights = {
 	'H':   1.007940,	'He':  4.002602,	'Li':  6.941000,	'Be':  9.012182,	'B':   10.811000,
