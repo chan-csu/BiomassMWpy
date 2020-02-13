@@ -1,4 +1,5 @@
 from __future__ import print_function
+from builtins import int
 
 class data_object(object):
 	'''data_object has a representation summarizing all public attributes
@@ -9,7 +10,7 @@ class data_object(object):
 			if k[0] != '_':
 				val = eval("self." + k)
 				s = ''
-				if isinstance(val, (int, long, float, complex)):
+				if isinstance(val, (int, float, complex)):
 					s = str(val)
 				elif isinstance(val, (list, dict, tuple, set)):
 					s = str(len(val))
